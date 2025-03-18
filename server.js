@@ -88,11 +88,11 @@ app.post("/initiate-payment", async (req, res) => {
   try {
     const accessToken = await getAccessToken();
     const merchantOrderId = uuidv4(); // Generate a unique UUID
-
+    const userAmount = 1;
     const payload = {
       merchantOrderId: merchantOrderId,
-      amount: 1000, // Amount in paise (e.g., 1000 = ₹10)
-      expireAfter: 3600, // Expiry time in seconds (1 hour)
+      amount: userAmount * 100, // Amount in paise (e.g., 1000 = ₹10)
+      expireAfter: 900, // Expiry time in seconds (1 hour)
       metaInfo: {
         udf1: "Additional Info 1",
         udf2: "Additional Info 2",
