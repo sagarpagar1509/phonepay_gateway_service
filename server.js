@@ -12,7 +12,14 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Enable CORS for all routes
-app.use(cors());
+app.use(cors({
+    origin: 'https://successmarathi.vercel.app/', // Replace with your frontend URL
+    methods: ['GET', 'POST', 'OPTIONS'], // Allow these methods
+    allowedHeaders: ['Content-Type', 'Authorization'] // Allow these headers
+}));
+
+// Handle preflight OPTIONS requests
+app.options('*', cors()); // Enable preflight for all routes
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -83,7 +90,7 @@ app.post('/initiate-payment', async (req, res) => {
                 type: "PG_CHECKOUT",
                 message: "Payment for order " + merchantOrderId,
                 merchantUrls: {
-                    redirectUrl: "https://yourproductiondomain.com/payment-callback"
+                    redirectUrl: "https://successmarathi.vercel.app/payment-callback"
                 }
             }
         };
