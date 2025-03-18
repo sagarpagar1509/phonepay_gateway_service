@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3001;
 
 // Enable CORS for all routes
 app.use(cors({
-    origin: 'https://successmarathi.vercel.app/', // Replace with your frontend URL
+    origin: 'https://successmarathi.vercel.app', // Replace with your frontend URL
     methods: ['GET', 'POST', 'OPTIONS'], // Allow these methods
     allowedHeaders: ['Content-Type', 'Authorization'] // Allow these headers
 }));
