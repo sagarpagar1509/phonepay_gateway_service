@@ -88,7 +88,7 @@ app.post("/initiate-payment", async (req, res) => {
   try {
     const accessToken = await getAccessToken();
     const merchantOrderId = uuidv4(); // Generate a unique UUID
-    const { amount } = req.body; // Receive amount from frontend
+    const { amount } = req.body;
 
     if (!amount || amount <= 0) {
       return res.status(400).json({
@@ -98,10 +98,9 @@ app.post("/initiate-payment", async (req, res) => {
     }
 
     const amountInPaise = Math.round(amount * 100);
-
     const payload = {
       merchantOrderId: merchantOrderId,
-      amount: amountInPaise * 100, // Amount in paise (e.g., 1000 = ₹10)
+      amount: amountInPaise, // Amount in paise (e.g., 1000 = ₹10)
       expireAfter: 900, // Expiry time in seconds (1 hour)
       metaInfo: {
         udf1: "Additional Info 1",
