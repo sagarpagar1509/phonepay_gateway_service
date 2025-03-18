@@ -88,7 +88,15 @@ app.post("/initiate-payment", async (req, res) => {
   try {
     const accessToken = await getAccessToken();
     const merchantOrderId = uuidv4(); // Generate a unique UUID
-    const userAmount = 1;
+    const { amount } = req.body; // Receive amount from frontend
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid amount. Please enter a valid amount greater than 0.",
+      });
+    }
+
     const payload = {
       merchantOrderId: merchantOrderId,
       amount: userAmount * 100, // Amount in paise (e.g., 1000 = ₹10)
