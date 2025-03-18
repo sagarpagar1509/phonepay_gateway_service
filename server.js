@@ -99,7 +99,7 @@ app.post("/initiate-payment", async (req, res) => {
 
     const payload = {
       merchantOrderId: merchantOrderId,
-      amount: userAmount * 100, // Amount in paise (e.g., 1000 = ₹10)
+      amount: amount * 100, // Amount in paise (e.g., 1000 = ₹10)
       expireAfter: 900, // Expiry time in seconds (1 hour)
       metaInfo: {
         udf1: "Additional Info 1",
