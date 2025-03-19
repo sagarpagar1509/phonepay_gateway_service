@@ -206,47 +206,47 @@ app.get("/order-status/:orderId", async (req, res) => {
 
 
 
-// app.post("/payment-webhook", (req, res) => {
-//   const paymentStatus = req.body; // Payment status from PhonePe
+app.post("/payment-webhook", (req, res) => {
+  const paymentStatus = req.body; // Payment status from PhonePe
 
-//   // Log the payment status for debugging
-//   console.log("Payment Webhook Received (POST):", paymentStatus);
+  // Log the payment status for debugging
+  console.log("Payment Webhook Received (POST):", paymentStatus);
 
-//   if (paymentStatus && paymentStatus.state === "SUCCESS") {
-//     console.log("Payment successful for order:", paymentStatus.merchantOrderId);
-//     // Process the successful payment (e.g., update database)
-//   } else if (paymentStatus.state === "PENDING") {
-//     console.log(
-//       "Payment is still pending for order:",
-//       paymentStatus.merchantOrderId
-//     );
-//     // Handle pending payment (You may want to retry later)
-//   } else {
-//     console.log("Payment failed for order:", paymentStatus.merchantOrderId);
-//     // Handle failed payment
-//   }
+  if (paymentStatus && paymentStatus.state === "SUCCESS") {
+    console.log("Payment successful for order:", paymentStatus.merchantOrderId);
+    // Process the successful payment (e.g., update database)
+  } else if (paymentStatus.state === "PENDING") {
+    console.log(
+      "Payment is still pending for order:",
+      paymentStatus.merchantOrderId
+    );
+    // Handle pending payment (You may want to retry later)
+  } else {
+    console.log("Payment failed for order:", paymentStatus.merchantOrderId);
+    // Handle failed payment
+  }
 
-//   res.status(200).send("Webhook received");
-// });
+  res.status(200).send("Webhook received");
+});
 
-// // Handle GET requests to /payment-callback (for user redirection)
-// app.get("/payment-callback", (req, res) => {
+// Handle GET requests to /payment-callback (for user redirection)
+app.get("/payment-callback", (req, res) => {
 
-//   const queryParams = req.query;
-//   console.log("Payment Callback Received (GET):", queryParams);
+  const queryParams = req.query;
+  console.log("Payment Callback Received (GET):", queryParams);
 
-//   const { status, merchantOrderId } = req.query;
+  const { status, merchantOrderId } = req.query;
 
-//   console.log("Payment Callback Received (GET):", { status, merchantOrderId });
+  console.log("Payment Callback Received (GET):", { status, merchantOrderId });
 
-//   if (status && status.toUpperCase() === "SUCCESS") {
-//     // Redirect to the success page
-//     return res.redirect("https://successmarathi.vercel.app/success");
-//   } else {
-//     // Redirect to the failure page
-//     return res.redirect("https://successmarathi.vercel.app/failure");
-//   }
-// });
+  if (status && status.toUpperCase() === "SUCCESS") {
+    // Redirect to the success page
+    return res.redirect("https://successmarathi.vercel.app/success");
+  } else {
+    // Redirect to the failure page
+    return res.redirect("https://successmarathi.vercel.app/failure");
+  }
+});
 
 // Start the server
 app.listen(PORT, () => {
