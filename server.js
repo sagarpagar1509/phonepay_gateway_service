@@ -102,7 +102,7 @@ app.post("/initiate-payment", async (req, res) => {
       paymentFlow: {
         type: "PG_CHECKOUT",
         merchantUrls: {
-          redirectUrl: "https://your-backend-url.com/payment-callback", // Callback URL for webhook
+          redirectUrl: "https://phonepay-gateway-service.onrender.com/payment-callback", // Callback URL for webhook
           successUrl: "https://successmarathi.vercel.app/success", // Redirect URL for success
           failureUrl: "https://successmarathi.vercel.app/failure", // Redirect URL for failure
         },
