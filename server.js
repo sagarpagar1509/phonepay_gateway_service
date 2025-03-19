@@ -189,6 +189,72 @@ app.post("/initiate-payment", async (req, res) => {
 // });
 
 // Check Payment Status
+// app.get("/payment-status/:merchantOrderId", async (req, res) => {
+//   try {
+//     const { merchantOrderId } = req.params;
+
+//     // Validate merchantOrderId
+//     if (!merchantOrderId) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid merchantOrderId.",
+//       });
+//     }
+
+//     // Fetch access token
+//     const accessToken = await getAccessToken();
+//     if (!accessToken) {
+//       return res.status(500).json({
+//         success: false,
+//         message: "Failed to fetch access token.",
+//       });
+//     }
+
+//     // Fetch payment status from PhonePe
+//     const response = await axios.get(
+//       `${PHONEPE_ORDER_STATUS_URL}/${merchantOrderId}/status`,
+//       {
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `O-Bearer ${accessToken}`,
+//         },
+//       }
+//     );
+
+//     // Log the response for debugging
+//     console.log("PhonePe Status API Response:", response.data);
+
+//     // Check if the response structure is valid
+//     if (!response.data || !response.data.state) {
+//       console.error("Invalid response structure from PhonePe API:", response.data);
+//       return res.redirect("https://successmarathi.vercel.app/failure");
+//     }
+
+//     // Extract payment state
+//     const paymentState = response.data.state;
+
+//     // Redirect based on payment state
+//     if (paymentState === "SUCCESS") {
+//       return res.redirect("https://successmarathi.vercel.app/success");
+//     } else if (paymentState === "FAILED") {
+//       return res.redirect("https://successmarathi.vercel.app/failure");
+//     } else {
+//       // Handle other states (e.g., CREATED, PENDING)
+//       return res.status(200).json({
+//         success: true,
+//         message: "Payment is still in progress.",
+//         state: paymentState,
+//       });
+//     }
+//   } catch (error) {
+//     console.error(
+//       "Error fetching payment status:",
+//       error.response?.data || error.message
+//     );
+//     return res.redirect("https://successmarathi.vercel.app/failure"); // Redirect to failure page in case of error
+//   }
+// });
+
 app.get("/payment-status/:merchantOrderId", async (req, res) => {
   try {
     const { merchantOrderId } = req.params;
@@ -226,7 +292,10 @@ app.get("/payment-status/:merchantOrderId", async (req, res) => {
 
     // Check if the response structure is valid
     if (!response.data || !response.data.state) {
-      console.error("Invalid response structure from PhonePe API:", response.data);
+      console.error(
+        "Invalid response structure from PhonePe API:",
+        response.data
+      );
       return res.redirect("https://successmarathi.vercel.app/failure");
     }
 
@@ -234,7 +303,7 @@ app.get("/payment-status/:merchantOrderId", async (req, res) => {
     const paymentState = response.data.state;
 
     // Redirect based on payment state
-    if (paymentState === "SUCCESS") {
+    if (paymentState === "SUCCESS" || paymentState === "COMPLETED") {
       return res.redirect("https://successmarathi.vercel.app/success");
     } else if (paymentState === "FAILED") {
       return res.redirect("https://successmarathi.vercel.app/failure");
@@ -254,7 +323,6 @@ app.get("/payment-status/:merchantOrderId", async (req, res) => {
     return res.redirect("https://successmarathi.vercel.app/failure"); // Redirect to failure page in case of error
   }
 });
-
 
 app.post("/payment-webhook", (req, res) => {
   const paymentStatus = req.body; // Payment status from PhonePe
@@ -281,7 +349,6 @@ app.post("/payment-webhook", (req, res) => {
 
 // Handle GET requests to /payment-callback (for user redirection)
 app.get("/payment-callback", (req, res) => {
-
   const queryParams = req.query;
   console.log("Payment Callback Received (GET):", queryParams);
 
