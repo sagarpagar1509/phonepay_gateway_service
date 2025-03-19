@@ -225,19 +225,26 @@ app.get("/payment-status/:merchantOrderId", async (req, res) => {
     console.log("PhonePe Status API Response:", response.data);
 
     // Check if the response structure is valid
-    if (!response.data || !response.data.data || !response.data.data.status) {
+    if (!response.data || !response.data.state) {
       console.error("Invalid response structure from PhonePe API:", response.data);
       return res.redirect("https://successmarathi.vercel.app/failure");
     }
 
-    // Extract payment status
-    const paymentStatus = response.data.data.status;
+    // Extract payment state
+    const paymentState = response.data.state;
 
-    // Redirect based on payment status
-    if (paymentStatus === "SUCCESS") {
+    // Redirect based on payment state
+    if (paymentState === "SUCCESS") {
       return res.redirect("https://successmarathi.vercel.app/success");
-    } else {
+    } else if (paymentState === "FAILED") {
       return res.redirect("https://successmarathi.vercel.app/failure");
+    } else {
+      // Handle other states (e.g., CREATED, PENDING)
+      return res.status(200).json({
+        success: true,
+        message: "Payment is still in progress.",
+        state: paymentState,
+      });
     }
   } catch (error) {
     console.error(
