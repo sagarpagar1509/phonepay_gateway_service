@@ -81,6 +81,57 @@ const getAccessToken = async () => {
 };
 app.use(cors());
 // Initiate Payment
+// app.post("/initiate-payment", async (req, res) => {
+//   try {
+//     const accessToken = await getAccessToken();
+//     const merchantOrderId = uuidv4(); // Generate a unique UUID
+//     const { amount } = req.body;
+
+//     if (!amount || amount <= 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid amount. Please enter a valid amount greater than 0.",
+//       });
+//     }
+
+//     const amountInPaise = Math.round(amount * 100); // Convert INR to paise
+//     const payload = {
+//       merchantOrderId: merchantOrderId,
+//       amount: amountInPaise, // Amount in paise (e.g., 1000 = ₹10)
+//       expireAfter: 900, // Expiry time in seconds (15 minutes)
+//       paymentFlow: {
+//         type: "PG_CHECKOUT",
+//         merchantUrls: {
+//           redirectUrl: "https://phonepay-gateway-service.onrender.com/payment-callback", // Callback URL for webhook
+//           successUrl: "https://successmarathi.vercel.app/success", // Redirect URL for success
+//           failureUrl: "https://successmarathi.vercel.app/failure", // Redirect URL for failure
+//         },
+//       },
+//     };
+
+//     const response = await axios.post(PHONEPE_PAYMENT_URL, payload, {
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `O-Bearer ${accessToken}`,
+//       },
+//     });
+
+//     res.status(200).json({
+//       success: true,
+//       data: response.data,
+//     });
+//   } catch (error) {
+//     console.error(
+//       "Error initiating payment:",
+//       error.response?.data || error.message
+//     );
+//     res.status(500).json({
+//       success: false,
+//       message: "Payment initiation failed",
+//       error: error.response?.data || error.message,
+//     });
+//   }
+// });
 app.post("/initiate-payment", async (req, res) => {
   try {
     const accessToken = await getAccessToken();
@@ -102,7 +153,7 @@ app.post("/initiate-payment", async (req, res) => {
       paymentFlow: {
         type: "PG_CHECKOUT",
         merchantUrls: {
-          redirectUrl: "https://phonepay-gateway-service.onrender.com/payment-callback", // Callback URL for webhook
+          redirectUrl: "https://phonepay-gateway-service.onrender.com/payment-callback", // Redirect URL for user
           successUrl: "https://successmarathi.vercel.app/success", // Redirect URL for success
           failureUrl: "https://successmarathi.vercel.app/failure", // Redirect URL for failure
         },
@@ -184,10 +235,37 @@ app.post("/payment-callback", (req, res) => {
   }
 });
 
-// Handle GET requests to /payment-callback (for testing only)
+// Webhook Handler (POST request from PhonePe)
+app.post("/payment-webhook", (req, res) => {
+  const paymentStatus = req.body; // Payment status from PhonePe
+
+  // Log the payment status for debugging
+  console.log("Payment Webhook Received (POST):", paymentStatus);
+
+  if (paymentStatus && paymentStatus.status === "SUCCESS") {
+    console.log("Payment successful for order:", paymentStatus.merchantOrderId);
+    // Process the payment status (e.g., update database)
+  } else {
+    console.log("Payment failed for order:", paymentStatus.merchantOrderId);
+    // Handle failed payment
+  }
+
+  res.status(200).send("Webhook received");
+});
+
+// Handle GET requests to /payment-callback (for user redirection)
 app.get("/payment-callback", (req, res) => {
-  console.log("GET request received at /payment-callback");
-  res.status(200).send("GET request received at /payment-callback");
+  const { status, merchantOrderId } = req.query;
+
+  console.log("Payment Callback Received (GET):", { status, merchantOrderId });
+
+  if (status === "SUCCESS") {
+    // Redirect to the success page
+    return res.redirect("https://successmarathi.vercel.app/success");
+  } else {
+    // Redirect to the failure page
+    return res.redirect("https://successmarathi.vercel.app/failure");
+  }
 });
 
 // Start the server
