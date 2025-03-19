@@ -95,6 +95,7 @@ app.post("/initiate-payment", async (req, res) => {
     }
 
     const amountInPaise = Math.round(amount * 100); // Convert INR to paise
+    
     const payload = {
       merchantOrderId: merchantOrderId,
       amount: amountInPaise, // Amount in paise (e.g., 1000 = ₹10)
@@ -102,8 +103,7 @@ app.post("/initiate-payment", async (req, res) => {
       paymentFlow: {
         type: "PG_CHECKOUT",
         merchantUrls: {
-          redirectUrl:
-            "https://phonepay-gateway-service.onrender.com/payment-callback", // Redirect URL for user
+          redirectUrl: `https://phonepay-gateway-service.onrender.com/payment-status/${merchantOrderId}`, // Dynamic redirectUrl
           successUrl: "https://successmarathi.vercel.app/success", // Redirect URL for success
           failureUrl: "https://successmarathi.vercel.app/failure", // Redirect URL for failure
         },
@@ -167,43 +167,44 @@ app.post("/initiate-payment", async (req, res) => {
 //   }
 // });
 
-app.get("/order-status/:orderId", async (req, res) => {
+// Check Payment Status
+app.get("/payment-status/:merchantOrderId", async (req, res) => {
   try {
-    const orderId = req.params.orderId;
-    const accessToken = await getAccessToken();
+    const { merchantOrderId } = req.params; // Get merchantOrderId from URL
+    const accessToken = await getAccessToken(); // Fetch access token
 
-    // Fetch order status from PhonePe API
+    // Fetch payment status from PhonePe
     const response = await axios.get(
-      `${PHONEPE_ORDER_STATUS_URL}/${orderId}/status`,
+      `${PHONEPE_ORDER_STATUS_URL}/${merchantOrderId}/status`,
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `O-Bearer ${accessToken}`,
+          Authorization: `O-Bearer ${accessToken}`, // Use "O-Bearer" as per PhonePe v2 API
         },
       }
     );
 
-    // Log the full response for debugging
-    console.log("Full Order Status Response:", JSON.stringify(response.data, null, 2));
+    // Extract payment status from the response
+    const paymentStatus = response.data.data.status;
 
-    // Extract the status from the response
-    const status = response.data?.data?.status; // Adjust this based on the actual response structure
-
-    // Check if the status indicates success
-    if (status && status.toUpperCase() === "COMPLETED") {
-      // Redirect to the success page
+    // Redirect based on payment status
+    if (paymentStatus === "SUCCESS") {
       return res.redirect("https://successmarathi.vercel.app/success");
     } else {
-      // Redirect to the failure page
       return res.redirect("https://successmarathi.vercel.app/failure");
     }
   } catch (error) {
-    console.error("Error fetching order status:", error.response?.data || error.message);
-    // Redirect to the failure page in case of an error
-    return res.redirect("https://successmarathi.vercel.app/failure");
+    console.error(
+      "Error fetching payment status:",
+      error.response?.data || error.message
+    );
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch payment status",
+      error: error.response?.data || error.message,
+    });
   }
 });
-
 
 
 app.post("/payment-webhook", (req, res) => {
