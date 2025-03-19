@@ -97,10 +97,10 @@ app.post("/initiate-payment", async (req, res) => {
       });
     }
 
-    const amountInPaise = Math.round(amount * 100);
+    const amountInPaise = Math.round(amount * 100); // Convert INR to paise
     const payload = {
       merchantOrderId: merchantOrderId,
-      amount: amountInPaise, // Amount in paise (e.g., 1000 = ₹10)
+      amount: amountInPaise,  // Amount in paise (e.g., 1000 = ₹10)
       expireAfter: 900, // Expiry time in seconds (1 hour)
       metaInfo: {
         udf1: "Additional Info 1",
