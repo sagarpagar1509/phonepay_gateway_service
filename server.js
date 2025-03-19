@@ -83,10 +83,9 @@ app.use(cors());
 
 app.post("/initiate-payment", async (req, res) => {
   try {
-    const accessToken = await getAccessToken();
-    const merchantOrderId = uuidv4(); // Generate a unique UUID
     const { amount } = req.body;
 
+    // Validate amount
     if (!amount || amount <= 0) {
       return res.status(400).json({
         success: false,
@@ -94,11 +93,25 @@ app.post("/initiate-payment", async (req, res) => {
       });
     }
 
-    const amountInPaise = Math.round(amount * 100); // Convert INR to paise
-    
+    // Fetch access token
+    const accessToken = await getAccessToken();
+    if (!accessToken) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch access token.",
+      });
+    }
+
+    // Generate a unique merchantOrderId
+    const merchantOrderId = uuidv4();
+
+    // Convert amount to paise
+    const amountInPaise = Math.round(amount * 100);
+
+    // Prepare payload for PhonePe API
     const payload = {
       merchantOrderId: merchantOrderId,
-      amount: amountInPaise, // Amount in paise (e.g., 1000 = ₹10)
+      amount: amountInPaise, // Amount in paise
       expireAfter: 900, // Expiry time in seconds (15 minutes)
       paymentFlow: {
         type: "PG_CHECKOUT",
@@ -110,6 +123,10 @@ app.post("/initiate-payment", async (req, res) => {
       },
     };
 
+    // Log the payload for debugging
+    console.log("PhonePe Payload:", payload);
+
+    // Call PhonePe API to initiate payment
     const response = await axios.post(PHONEPE_PAYMENT_URL, payload, {
       headers: {
         "Content-Type": "application/json",
@@ -117,6 +134,10 @@ app.post("/initiate-payment", async (req, res) => {
       },
     });
 
+    // Log the response for debugging
+    console.log("PhonePe API Response:", response.data);
+
+    // Return success response
     res.status(200).json({
       success: true,
       data: response.data,
@@ -170,8 +191,24 @@ app.post("/initiate-payment", async (req, res) => {
 // Check Payment Status
 app.get("/payment-status/:merchantOrderId", async (req, res) => {
   try {
-    const { merchantOrderId } = req.params; // Get merchantOrderId from URL
-    const accessToken = await getAccessToken(); // Fetch access token
+    const { merchantOrderId } = req.params;
+
+    // Validate merchantOrderId
+    if (!merchantOrderId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid merchantOrderId.",
+      });
+    }
+
+    // Fetch access token
+    const accessToken = await getAccessToken();
+    if (!accessToken) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch access token.",
+      });
+    }
 
     // Fetch payment status from PhonePe
     const response = await axios.get(
@@ -179,12 +216,21 @@ app.get("/payment-status/:merchantOrderId", async (req, res) => {
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `O-Bearer ${accessToken}`, // Use "O-Bearer" as per PhonePe v2 API
+          Authorization: `O-Bearer ${accessToken}`,
         },
       }
     );
 
-    // Extract payment status from the response
+    // Log the response for debugging
+    console.log("PhonePe Status API Response:", response.data);
+
+    // Check if the response structure is valid
+    if (!response.data || !response.data.data || !response.data.data.status) {
+      console.error("Invalid response structure from PhonePe API:", response.data);
+      return res.redirect("https://successmarathi.vercel.app/failure");
+    }
+
+    // Extract payment status
     const paymentStatus = response.data.data.status;
 
     // Redirect based on payment status
@@ -198,11 +244,7 @@ app.get("/payment-status/:merchantOrderId", async (req, res) => {
       "Error fetching payment status:",
       error.response?.data || error.message
     );
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch payment status",
-      error: error.response?.data || error.message,
-    });
+    return res.redirect("https://successmarathi.vercel.app/failure"); // Redirect to failure page in case of error
   }
 });
 
