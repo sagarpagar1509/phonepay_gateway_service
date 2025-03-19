@@ -279,11 +279,15 @@ app.post("/payment-webhook", (req, res) => {
 
 // Handle GET requests to /payment-callback (for user redirection)
 app.get("/payment-callback", (req, res) => {
+
+  const queryParams = req.query;
+  console.log("Payment Callback Received (GET):", queryParams);
+  
   const { status, merchantOrderId } = req.query;
 
   console.log("Payment Callback Received (GET):", { status, merchantOrderId });
 
-  if (status === "SUCCESS") {
+  if (status && status.toUpperCase() === "SUCCESS") {
     // Redirect to the success page
     return res.redirect("https://successmarathi.vercel.app/success");
   } else {
