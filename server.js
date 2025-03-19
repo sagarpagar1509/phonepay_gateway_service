@@ -102,7 +102,7 @@ app.post("/initiate-payment", async (req, res) => {
       paymentFlow: {
         type: "PG_CHECKOUT",
         merchantUrls: {
-          redirectUrl: "https://successmarathi.vercel.app/payment-callback", // Callback URL for webhook
+          redirectUrl: "https://your-backend-url.com/payment-callback", // Callback URL for webhook
           successUrl: "https://successmarathi.vercel.app/success", // Redirect URL for success
           failureUrl: "https://successmarathi.vercel.app/failure", // Redirect URL for failure
         },
@@ -168,16 +168,19 @@ app.get("/order-status/:orderId", async (req, res) => {
 
 // Webhook Handler
 app.post("/payment-callback", (req, res) => {
-  const paymentStatus = req.body;
+  const paymentStatus = req.body; // Payment status from PhonePe
 
-  if (paymentStatus.status === "SUCCESS") {
+  // Log the payment status for debugging
+  console.log("Payment Status Received:", paymentStatus);
+
+  if (paymentStatus && paymentStatus.status === "SUCCESS") {
     console.log("Payment successful for order:", paymentStatus.merchantOrderId);
     // Redirect to the success page
-    res.redirect("https://successmarathi.vercel.app/success");
+    return res.redirect("https://successmarathi.vercel.app/success");
   } else {
     console.log("Payment failed for order:", paymentStatus.merchantOrderId);
     // Redirect to the failure page
-    res.redirect("https://successmarathi.vercel.app/failure");
+    return res.redirect("https://successmarathi.vercel.app/failure");
   }
 });
 
