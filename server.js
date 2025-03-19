@@ -166,12 +166,12 @@ app.get("/order-status/:orderId", async (req, res) => {
   }
 });
 
-// Webhook Handler
+// Webhook Handler (POST request from PhonePe)
 app.post("/payment-callback", (req, res) => {
   const paymentStatus = req.body; // Payment status from PhonePe
 
   // Log the payment status for debugging
-  console.log("Payment Status Received:", paymentStatus);
+  console.log("Payment Status Received (POST):", paymentStatus);
 
   if (paymentStatus && paymentStatus.status === "SUCCESS") {
     console.log("Payment successful for order:", paymentStatus.merchantOrderId);
@@ -184,11 +184,16 @@ app.post("/payment-callback", (req, res) => {
   }
 });
 
+// Handle GET requests to /payment-callback (for testing only)
+app.get("/payment-callback", (req, res) => {
+  console.log("GET request received at /payment-callback");
+  res.status(200).send("GET request received at /payment-callback");
+});
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
-
 
 
 
