@@ -172,6 +172,7 @@ app.get("/order-status/:orderId", async (req, res) => {
     const orderId = req.params.orderId;
     const accessToken = await getAccessToken();
 
+    // Fetch order status from PhonePe API
     const response = await axios.get(
       `${PHONEPE_ORDER_STATUS_URL}/${orderId}/status`,
       {
@@ -182,20 +183,26 @@ app.get("/order-status/:orderId", async (req, res) => {
       }
     );
 
-    console.log("Order Status Response:", response.data);
+    // Log the full response for debugging
+    console.log("Full Order Status Response:", JSON.stringify(response.data, null, 2));
 
-    // Assuming the response structure is { success: true, data: { status: "COMPLETED" } }
-    if (response.data.success && response.data.data.status === "COMPLETED") {
-      res.redirect("https://successmarathi.vercel.app/success");
+    // Extract the status from the response
+    const status = response.data?.data?.status; // Adjust this based on the actual response structure
+
+    // Check if the status indicates success
+    if (status && status.toUpperCase() === "COMPLETED") {
+      // Redirect to the success page
+      return res.redirect("https://successmarathi.vercel.app/success");
     } else {
-      res.redirect("https://successmarathi.vercel.app/failure");
+      // Redirect to the failure page
+      return res.redirect("https://successmarathi.vercel.app/failure");
     }
   } catch (error) {
     console.error("Error fetching order status:", error.response?.data || error.message);
-    res.redirect("https://successmarathi.vercel.app/failure");
+    // Redirect to the failure page in case of an error
+    return res.redirect("https://successmarathi.vercel.app/failure");
   }
 });
-
 
 
 
