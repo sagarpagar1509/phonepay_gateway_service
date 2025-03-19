@@ -79,7 +79,7 @@ const getAccessToken = async () => {
     throw new Error("Failed to fetch access token");
   }
 };
-
+app.use(cors());
 // Initiate Payment
 app.post("/initiate-payment", async (req, res) => {
   try {
