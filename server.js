@@ -163,7 +163,7 @@ app.post("/initiate-payment", async (req, res) => {
     const response = await axios.post(PHONEPE_PAYMENT_URL, payload, {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `O-Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
 
@@ -217,19 +217,16 @@ app.get("/order-status/:orderId", async (req, res) => {
   }
 });
 
-// Webhook Handler (POST request from PhonePe)
-app.post("/payment-callback", (req, res) => {
-  const paymentStatus = req.body; // Payment status from PhonePe
+// Handle GET requests to /payment-callback (for user redirection)
+app.get("/payment-callback", (req, res) => {
+  const { status, merchantOrderId } = req.query;
 
-  // Log the payment status for debugging
-  console.log("Payment Status Received (POST):", paymentStatus);
+  console.log("Payment Callback Received (GET):", { status, merchantOrderId });
 
-  if (paymentStatus && paymentStatus.status === "SUCCESS") {
-    console.log("Payment successful for order:", paymentStatus.merchantOrderId);
+  if (status === "SUCCESS") {
     // Redirect to the success page
     return res.redirect("https://successmarathi.vercel.app/success");
   } else {
-    console.log("Payment failed for order:", paymentStatus.merchantOrderId);
     // Redirect to the failure page
     return res.redirect("https://successmarathi.vercel.app/failure");
   }
@@ -251,21 +248,6 @@ app.post("/payment-webhook", (req, res) => {
   }
 
   res.status(200).send("Webhook received");
-});
-
-// Handle GET requests to /payment-callback (for user redirection)
-app.get("/payment-callback", (req, res) => {
-  const { status, merchantOrderId } = req.query;
-
-  console.log("Payment Callback Received (GET):", { status, merchantOrderId });
-
-  if (status === "SUCCESS") {
-    // Redirect to the success page
-    return res.redirect("https://successmarathi.vercel.app/success");
-  } else {
-    // Redirect to the failure page
-    return res.redirect("https://successmarathi.vercel.app/failure");
-  }
 });
 
 // Start the server
