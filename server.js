@@ -172,11 +172,13 @@ app.post("/payment-callback", (req, res) => {
 
   if (paymentStatus.status === "SUCCESS") {
     console.log("Payment successful for order:", paymentStatus.merchantOrderId);
+    // Redirect to the success page
+    res.redirect("https://successmarathi.vercel.app/success");
   } else {
     console.log("Payment failed for order:", paymentStatus.merchantOrderId);
+    // Redirect to the failure page
+    res.redirect("https://successmarathi.vercel.app/failure");
   }
-
-  res.status(200).send("Webhook received");
 });
 
 // Start the server
