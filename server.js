@@ -153,7 +153,8 @@ app.post("/initiate-payment", async (req, res) => {
       paymentFlow: {
         type: "PG_CHECKOUT",
         merchantUrls: {
-          redirectUrl: "https://phonepay-gateway-service.onrender.com/payment-callback", // Redirect URL for user
+          redirectUrl:
+            "https://phonepay-gateway-service.onrender.com/payment-callback", // Redirect URL for user
           successUrl: "https://successmarathi.vercel.app/success", // Redirect URL for success
           failureUrl: "https://successmarathi.vercel.app/failure", // Redirect URL for failure
         },
@@ -218,33 +219,56 @@ app.get("/order-status/:orderId", async (req, res) => {
 });
 
 // Webhook Handler (POST request from PhonePe)
-app.post("/payment-callback", (req, res) => {
-  const paymentStatus = req.body; // Payment status from PhonePe
+// app.post("/payment-callback", (req, res) => {
+//   const paymentStatus = req.body; // Payment status from PhonePe
 
-  // Log the payment status for debugging
-  console.log("Payment Status Received (POST):", paymentStatus);
+//   // Log the payment status for debugging
+//   console.log("Payment Status Received (POST):", paymentStatus);
 
-  if (paymentStatus && paymentStatus.status === "SUCCESS") {
-    console.log("Payment successful for order:", paymentStatus.merchantOrderId);
-    // Redirect to the success page
-    return res.redirect("https://successmarathi.vercel.app/success");
-  } else {
-    console.log("Payment failed for order:", paymentStatus.merchantOrderId);
-    // Redirect to the failure page
-    return res.redirect("https://successmarathi.vercel.app/failure");
-  }
-});
+//   if (paymentStatus && paymentStatus.status === "SUCCESS") {
+//     console.log("Payment successful for order:", paymentStatus.merchantOrderId);
+//     // Redirect to the success page
+//     return res.redirect("https://successmarathi.vercel.app/success");
+//   } else {
+//     console.log("Payment failed for order:", paymentStatus.merchantOrderId);
+//     // Redirect to the failure page
+//     return res.redirect("https://successmarathi.vercel.app/failure");
+//   }
+// });
 
 // Webhook Handler (POST request from PhonePe)
+// app.post("/payment-webhook", (req, res) => {
+//   const paymentStatus = req.body; // Payment status from PhonePe
+
+//   // Log the payment status for debugging
+//   console.log("Payment Webhook Received (POST):", paymentStatus);
+
+//   if (paymentStatus && paymentStatus.state === "SUCCESS") {
+//     console.log("Payment successful for order:", paymentStatus.merchantOrderId);
+//     // Process the payment status (e.g., update database)
+//   } else {
+//     console.log("Payment failed for order:", paymentStatus.merchantOrderId);
+//     // Handle failed payment
+//   }
+
+//   res.status(200).send("Webhook received");
+// });
+
 app.post("/payment-webhook", (req, res) => {
   const paymentStatus = req.body; // Payment status from PhonePe
 
   // Log the payment status for debugging
   console.log("Payment Webhook Received (POST):", paymentStatus);
 
-  if (paymentStatus && paymentStatus.status === "SUCCESS") {
+  if (paymentStatus && paymentStatus.state === "SUCCESS") {
     console.log("Payment successful for order:", paymentStatus.merchantOrderId);
-    // Process the payment status (e.g., update database)
+    // Process the successful payment (e.g., update database)
+  } else if (paymentStatus.state === "PENDING") {
+    console.log(
+      "Payment is still pending for order:",
+      paymentStatus.merchantOrderId
+    );
+    // Handle pending payment (You may want to retry later)
   } else {
     console.log("Payment failed for order:", paymentStatus.merchantOrderId);
     // Handle failed payment
@@ -272,8 +296,6 @@ app.get("/payment-callback", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
-
-
 
 // const express = require("express");
 // const axios = require("axios");
